@@ -1,0 +1,16 @@
+services:
+  arena-mcp-server:
+    build: .
+    env_file:
+      - .env
+    stdin_open: true
+    labels:
+      - "mcp.enabled=true"
+      - "mcp.transport=stdio"
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./src
+          target: /app/src
+        - action: rebuild
+          path: ./pyproject.toml
