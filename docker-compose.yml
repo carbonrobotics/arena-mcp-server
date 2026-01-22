@@ -12,6 +12,7 @@ services:
       - traefik-public
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik-public"
       - "traefik.http.routers.arena-mcp.rule=Host(`arena-mcp.carbon.jonathansalzer.com`)"
       - "traefik.http.routers.arena-mcp.entrypoints=https"
       - "traefik.http.routers.arena-mcp.tls.certresolver=le"
