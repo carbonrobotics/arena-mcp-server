@@ -6,6 +6,8 @@ import warnings
 from fastmcp import FastMCP
 from fastmcp.server.auth import TokenVerifier
 from fastmcp.server.auth.auth import AccessToken
+from starlette.requests import Request
+from starlette.responses import Response
 
 from .arena_client import ArenaClient
 
@@ -385,6 +387,12 @@ def get_categories(path: str | None = None) -> str:
             lines.append(f"  Description: {cat['description']}")
 
     return "\n".join(lines)
+
+
+@mcp.custom_route("/health", methods=["GET"])
+def health_check(_request: Request) -> Response:
+    """Health check endpoint for load balancers and monitoring."""
+    return Response(status_code=200, content="OK")
 
 
 def main() -> None:
