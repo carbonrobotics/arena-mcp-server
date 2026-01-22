@@ -13,5 +13,5 @@ services:
           path: ./pyproject.toml
 
 networks:
-  traefik:
+  traefik-public:
     external: false  # Override to create local network instead of requiring external

@@ -6,7 +6,12 @@ from fastmcp import FastMCP
 from .arena_client import ArenaClient
 
 
-mcp = FastMCP("arena-mcp-server")
+# Configure host/port from environment
+HOST = os.environ.get("MCP_HOST", "0.0.0.0")
+PORT = int(os.environ.get("MCP_PORT", "8080"))
+
+mcp = FastMCP("arena-mcp-server", host=HOST, port=PORT)
+
 client: ArenaClient | None = None
 
 
@@ -340,14 +345,8 @@ def get_categories(path: str | None = None) -> str:
 
 def main() -> None:
     """Run the MCP server."""
-    transport = os.environ.get("MCP_TRANSPORT", "stdio")
-
-    if transport == "http":
-        host = os.environ.get("MCP_HOST", "0.0.0.0")
-        port = int(os.environ.get("MCP_PORT", "8080"))
-        mcp.run(transport="streamable-http", host=host, port=port)
-    else:
-        mcp.run()
+    print(f"Starting Arena MCP server on http://{HOST}:{PORT}")
+    mcp.run(transport="sse")
 
 
 if __name__ == "__main__":
