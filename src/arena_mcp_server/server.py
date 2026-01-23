@@ -1,6 +1,7 @@
 """MCP server for Arena PLM API."""
 
 import os
+import secrets
 from fastmcp import FastMCP
 from fastmcp.server.auth.providers.debug import DebugTokenVerifier
 
@@ -12,11 +13,18 @@ HOST = os.environ.get("MCP_HOST", "0.0.0.0")
 PORT = int(os.environ.get("MCP_PORT", "8080"))
 API_KEY = os.environ.get("MCP_API_KEY")
 
-# Configure API key authentication if key is set
-auth = None
+# Configure API key authentication
+# When no API key is set, deny all access by default
 if API_KEY:
     auth = DebugTokenVerifier(
-        validate=lambda token: token == API_KEY,
+        validate=lambda token: secrets.compare_digest(token, API_KEY),
+        client_id="arena-mcp-client",
+        scopes=["arena:access"],
+    )
+else:
+    # No API key configured - reject all requests
+    auth = DebugTokenVerifier(
+        validate=lambda token: False,
         client_id="arena-mcp-client",
         scopes=["arena:access"],
     )
