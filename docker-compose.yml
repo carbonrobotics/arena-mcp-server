@@ -1,5 +1,6 @@
 services:
   arena-mcp-server:
+    image: ghcr.io/carbonrobotics/arena-mcp-server:${TAG:-main}  
     build: .
     env_file:
       - .env
