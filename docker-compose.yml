@@ -1,16 +1,15 @@
 services:
   arena-mcp-server:
-    image: ghcr.io/carbonrobotics/arena-mcp-server:${TAG:-main}  
+    image: ghcr.io/carbonrobotics/arena-mcp-server:${TAG:-main}
     build: .
     env_file:
       - .env
     environment:
       - MCP_PORT=8080
+      - MCP_TRANSPORT=${MCP_TRANSPORT:-http}
+      - DISABLE_AUTH=${DISABLE_AUTH:-false}
     ports:
       - "8080:8080"
-    networks:
-      traefik-public:
-        optional: true
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik-public"
@@ -19,8 +18,3 @@ services:
       - "traefik.http.routers.arena-mcp.tls.certresolver=le"
       - "traefik.http.services.arena-mcp.loadbalancer.server.port=8080"
     restart: unless-stopped
-
-networks:
-  traefik-public:
-    external: true
-    optional: true

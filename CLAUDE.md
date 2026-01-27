@@ -18,9 +18,16 @@ docker compose up --build  # Rebuild and run
 
 Required in `.env`:
 - `ARENA_EMAIL`, `ARENA_PASSWORD`
-- `MCP_API_KEY` (min 32 chars, server denies all access if unset)
 
-Optional: `ARENA_WORKSPACE_ID`, `MCP_HOST`, `MCP_PORT`
+Authentication:
+- `MCP_API_KEY` (min 32 chars, server denies all access if unset)
+- `DISABLE_AUTH=true` (disables auth for local development - use only locally)
+
+Optional:
+- `ARENA_WORKSPACE_ID` (uses default workspace if not set)
+- `MCP_TRANSPORT` (http or sse, defaults to http)
+- `MCP_HOST` (defaults to 0.0.0.0)
+- `MCP_PORT` (defaults to 8080)
 
 ## Gotchas
 
