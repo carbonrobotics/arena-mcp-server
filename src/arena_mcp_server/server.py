@@ -15,18 +15,13 @@ from .arena_client import ArenaClient
 class APIKeyVerifier(TokenVerifier):
     """Production-ready API key verifier using constant-time comparison."""
 
-    def __init__(self, api_key: str | None, required_scopes: list[str] | None = None):
-        super().__init__(required_scopes=required_scopes)
+    def __init__(self, api_key: str | None):
+        super().__init__()
         self._api_key = api_key
 
     async def verify_token(self, token: str) -> AccessToken | None:
         """Verify the API key using constant-time comparison."""
-        # Reject empty tokens
-        if not token or not token.strip():
-            return None
-
-        # If no API key configured, deny all access
-        if not self._api_key:
+        if not token or not token.strip() or not self._api_key:
             return None
 
         # Constant-time comparison to prevent timing attacks
@@ -36,7 +31,6 @@ class APIKeyVerifier(TokenVerifier):
         return AccessToken(
             token=token,
             client_id="arena-mcp-client",
-            scopes=["arena:access"],
             expires_at=None,
         )
 
@@ -44,6 +38,8 @@ class APIKeyVerifier(TokenVerifier):
 # Configure host/port from environment
 HOST = os.environ.get("MCP_HOST", "0.0.0.0")
 PORT = int(os.environ.get("MCP_PORT", "8080"))
+TRANSPORT = os.environ.get("MCP_TRANSPORT", "http")  # http or sse
+DISABLE_AUTH = os.environ.get("DISABLE_AUTH", "").lower() in ("true", "1", "yes")
 API_KEY = os.environ.get("MCP_API_KEY")
 
 if API_KEY and len(API_KEY) < 32:
@@ -53,8 +49,16 @@ if API_KEY and len(API_KEY) < 32:
     )
 
 # Configure API key authentication
+# When DISABLE_AUTH is true, skip auth entirely
 # When no API key is set, deny all access by default
-auth = APIKeyVerifier(api_key=API_KEY, required_scopes=["arena:access"])
+if DISABLE_AUTH:
+    warnings.warn(
+        "Authentication is DISABLED - this should only be used for local development",
+        stacklevel=1,
+    )
+    auth = None
+else:
+    auth = APIKeyVerifier(api_key=API_KEY)
 
 mcp = FastMCP("arena-mcp-server", auth=auth)
 
@@ -397,8 +401,21 @@ def health_check(_request: Request) -> Response:
 
 def main() -> None:
     """Run the MCP server."""
+    # Validate required Arena credentials at startup
+    arena_email = os.environ.get("ARENA_EMAIL")
+    arena_password = os.environ.get("ARENA_PASSWORD")
+
+    if not arena_email or not arena_password:
+        print("ERROR: Missing required environment variables")
+        print("ARENA_EMAIL and ARENA_PASSWORD must be set")
+        print("\nPlease configure these in your .env file or environment")
+        raise SystemExit(1)
+
+    auth_status = "DISABLED" if DISABLE_AUTH else "enabled"
     print(f"Starting Arena MCP server on http://{HOST}:{PORT}")
-    mcp.run(transport="http", host=HOST, port=PORT)
+    print(f"Transport: {TRANSPORT}, Auth: {auth_status}")
+    print(f"Arena account: {arena_email}")
+    mcp.run(transport=TRANSPORT, host=HOST, port=PORT)
 
 
 if __name__ == "__main__":
