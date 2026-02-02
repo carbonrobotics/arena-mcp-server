@@ -11,7 +11,7 @@ docker compose up --build  # Rebuild and run
 
 ## Structure
 
-- `server.py` - MCP tools and auth (`APIKeyVerifier` subclasses `TokenVerifier`)
+- `server.py` - MCP tools and Scalekit OAuth 2.1 authentication
 - `arena_client.py` - Arena REST client (httpx, session-based auth)
 
 ## Environment
@@ -34,4 +34,5 @@ Optional:
 - Arena API requires `*wildcards*` for partial matches - `arena_client.py` adds them automatically
 - No session refresh on expiry - will error, needs re-auth
 - No rate limit retry logic
-- Auth is lazy (first tool call), not at startup
+- Arena auth is lazy (first tool call), not at startup
+- OAuth requires publicly accessible URL (use ngrok/cloudflare tunnel for local dev)

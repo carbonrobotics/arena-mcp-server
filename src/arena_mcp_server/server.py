@@ -1,9 +1,10 @@
 """MCP server for Arena PLM API."""
 
 import os
-import secrets
-import warnings
+
+from dotenv import load_dotenv
 from fastmcp import FastMCP
+from fastmcp.server.auth.providers.scalekit import ScalekitProvider
 from fastmcp.server.auth import TokenVerifier
 from fastmcp.server.auth.auth import AccessToken
 from starlette.requests import Request
@@ -11,6 +12,7 @@ from starlette.responses import Response
 
 from .arena_client import ArenaClient
 
+load_dotenv()
 
 class APIKeyVerifier(TokenVerifier):
     """Production-ready API key verifier using constant-time comparison."""
@@ -59,6 +61,13 @@ if DISABLE_AUTH:
     auth = None
 else:
     auth = APIKeyVerifier(api_key=API_KEY)
+
+# Configure Scalekit OAuth 2.1 authentication
+auth = ScalekitProvider(
+    environment_url=os.environ.get("SCALEKIT_ENVIRONMENT_URL", ""),
+    resource_id=os.environ.get("SCALEKIT_RESOURCE_ID", ""),
+    base_url=os.environ.get("MCP_URL", ""),
+)
 
 mcp = FastMCP("arena-mcp-server", auth=auth)
 
