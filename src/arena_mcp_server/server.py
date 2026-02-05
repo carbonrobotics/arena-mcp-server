@@ -370,7 +370,7 @@ def get_categories(path: str | None = None) -> str:
     return "\n".join(lines)
 
 
-@mcp.custom_route("/health", methods=["GET"])
+@mcp.custom_route("/healthz", methods=["GET"])
 def health_check(_request: Request) -> Response:
     """Health check endpoint for load balancers and monitoring."""
     return Response(status_code=200, content="OK")
